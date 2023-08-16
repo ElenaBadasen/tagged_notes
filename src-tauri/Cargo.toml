@@ -1,8 +1,8 @@
 [package]
 name = "tagged_notes"
 version = "0.0.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "App for creating tagged notes and searching them by tags"
+authors = ["Elena Badasen"]
 license = ""
 repository = ""
 edition = "2021"

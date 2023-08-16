@@ -1,53 +1,42 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
+import { Component } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
-import "./App.css";
 
-function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+type AppState = {
+  notes: Array<{key: React.Key, value: String}>,
+}
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    setGreetMsg(await invoke("greet", { name }));
+class App extends Component<{}, AppState> {
+  componentWillMount() {
+    this.setState({notes: []});
   }
 
-  return (
-    <div className="container">
-      <h1>Welcome to Tauri!</h1>
+  componentDidMount() {
+    invoke("notes").then((result) => {
+      let notes = result as Array<{key: React.Key, value: String}>;
+      this.setState({notes: notes});
+    });
+  }
 
-      <div className="row">
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+  render() {
+      return (
+        <div className="block">
+        <div className="tabs is-centered is-large">
+          <ul>
+            <li className="is-active"><a>Notes</a></li>
+            <li><a>New</a></li>
+            <li><a>About</a></li>
+          </ul>
+        </div>
+  
+        <div className="container has-text-centered">
+          <div className="block">
+            {this.state.notes.map((d) => <li key={d.key}>{d.value}</li>)}
+          </div>
+  
+        </div>
       </div>
-
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-
-      <p>{greetMsg}</p>
-    </div>
-  );
+      );
+  }
 }
 
 export default App;
