@@ -5,15 +5,30 @@ type AppState = {
   notes: Array<{key: React.Key, value: String}>,
 }
 
+interface AppProps {
+}
+
 class App extends Component<{}, AppState> {
+  constructor (props: AppProps){
+    super(props);
+    this.updateNotes = this.updateNotes.bind(this);
+  }
+
   componentWillMount() {
     this.setState({notes: []});
   }
 
   componentDidMount() {
+    this.updateNotes();
+  }
+
+  updateNotes() {
+    console.log("HER1");
+    let self = this;
     invoke("notes").then((result) => {
+      console.log("HERE2", result, self);
       let notes = result as Array<{key: React.Key, value: String}>;
-      this.setState({notes: notes});
+      self.setState({notes: notes});
     });
   }
 
@@ -32,7 +47,7 @@ class App extends Component<{}, AppState> {
           <div className="block">
             {this.state.notes.map((d) => <li key={d.key}>{d.value}</li>)}
           </div>
-  
+          <button className="button" onClick={this.updateNotes}>Refresh</button>
         </div>
       </div>
       );

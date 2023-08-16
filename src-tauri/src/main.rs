@@ -2,31 +2,27 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use serde::{Serialize, Deserialize};
-
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust from Elena!", name)
-}
+use chrono::prelude::*;
 
 #[tauri::command]
 fn notes() -> Vec<Note> {
     vec![
-        Note{key: "1", value: "note1"}, 
-        Note{key: "2", value: "note2"}, 
-        Note{key: "3", value: "loooooooooooooooong loooooooooooooooong note3"}
+        Note{key: "1".to_string(), value: "note1".to_string()}, 
+        Note{key: "2".to_string(), value: "note2".to_string()}, 
+        Note{key: "3".to_string(), value: "loooooooooooooooong loooooooooooooooong note3".to_string()},
+        Note{key: "4".to_string(), value: format!("{:?}", Utc::now())},
     ]
 }
 
 #[derive(Serialize, Deserialize)]
 struct Note {
-    key: &'static str,
-    value: &'static str,
+    key: String,
+    value: String,
 }
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet, notes])
+        .invoke_handler(tauri::generate_handler![notes])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
