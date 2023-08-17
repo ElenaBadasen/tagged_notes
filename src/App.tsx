@@ -2,6 +2,7 @@ import { Component } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import Icon from '@mdi/react';
 import { mdiRefresh } from '@mdi/js';
+import Edit from "./Edit";
 
 type AppState = {
   notes: Array<{key: React.Key, value: String, tags: Array<String>}>,
@@ -41,8 +42,6 @@ class App extends Component<{}, AppState> {
     this.handleTagClick = this.handleTagClick.bind(this);
     this.handleTabClick = this.handleTabClick.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleNewNoteTextChange = this.handleNewNoteTextChange.bind(this);
-    this.handleNewNoteTagsChange = this.handleNewNoteTagsChange.bind(this);
   }
 
   componentDidMount() {
@@ -135,25 +134,17 @@ class App extends Component<{}, AppState> {
     });
   }
 
-  handleSubmit = (e: Event) => {
-    e.preventDefault();
-    this.setState({
-      form_submitted: true,
-      submit_success: true,
-      new_note_tags: "",
-      new_note_text: "",
-    });
-  }
-
-  handleNewNoteTextChange = (e: React.FormEvent<HTMLInputElement>) => {
-    this.setState({new_note_text: e.currentTarget.value || ""});
-  }
-
-  handleNewNoteTagsChange = (e: React.FormEvent<HTMLInputElement>) => {
-    this.setState({new_note_tags: e.currentTarget.value || ""});
+  handleSubmit = (id: null | number, note: String, tags: String) => {
+    //TODO
+    return ""
   }
 
   render() {
+      const newProps = {
+        text: "",
+        tags: "",
+        handleSubmit: this.handleSubmit,
+      }
       return (
         <div className="block">
           <div className="tabs is-centered is-large m-4">
@@ -204,47 +195,7 @@ class App extends Component<{}, AppState> {
           </div>
 
           <div id="new" className="container is-hidden">
-            <div className="container">
-              <form onSubmit={this.handleSubmit}>
-                <div className="container">
-                  <div className="field">
-                    <div className="control">
-                      <textarea 
-                        className="textarea" 
-                        value={this.state.new_note_text as string} 
-                        placeholder="Note text"
-                        onChange={this.handleNewNoteTextChange}
-                      ></textarea>
-                    </div>
-                  </div>
-                  <div className="field">
-                    <div className="control">
-                      <textarea 
-                        className="textarea" 
-                        value={this.state.new_note_tags as string} 
-                        placeholder="Tags separated by commas"
-                        onChange={this.handleNewNoteTagsChange}
-                      ></textarea>
-                    </div>
-                  </div>
-
-                  <div className="control">
-                    <button className="button is-link" type="submit">Submit</button>
-                  </div>
-
-                  {this.state.form_submitted && this.state.submit_success && (
-                    <div className="container mt-4">
-                      The note was successfully saved!
-                    </div>
-                  )}
-                  {this.state.submit_success === false && (
-                    <div className="container mt-4">
-                      An error occured: {this.state.form_errors}
-                    </div>
-                  )}
-                </div>
-              </form>
-            </div>
+            <Edit {...newProps} />
           </div>
 
           <div id="about" className="container is-hidden">
