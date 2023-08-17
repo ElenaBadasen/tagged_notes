@@ -8,6 +8,11 @@ type AppState = {
   all_tags: Array<String>,
   yes_tags: Array<String>,
   no_tags: Array<String>,
+  form_submitted: boolean,
+  submit_success: boolean,
+  form_errors: String,
+  new_note_text: String,
+  new_note_tags: String,
 }
 
 interface AppProps {
@@ -22,6 +27,11 @@ class App extends Component<{}, AppState> {
       all_tags: [],
       yes_tags: [],
       no_tags: [],
+      form_submitted: false,
+      submit_success: true,
+      form_errors: "",
+      new_note_text: "",
+      new_note_tags: "",
     };
 
     this.updateNotes = this.updateNotes.bind(this);
@@ -30,6 +40,9 @@ class App extends Component<{}, AppState> {
     this.handleTagRightClick = this.handleTagRightClick.bind(this);
     this.handleTagClick = this.handleTagClick.bind(this);
     this.handleTabClick = this.handleTabClick.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleNewNoteTextChange = this.handleNewNoteTextChange.bind(this);
+    this.handleNewNoteTagsChange = this.handleNewNoteTagsChange.bind(this);
   }
 
   componentDidMount() {
@@ -122,6 +135,24 @@ class App extends Component<{}, AppState> {
     });
   }
 
+  handleSubmit = (e: Event) => {
+    e.preventDefault();
+    this.setState({
+      form_submitted: true,
+      submit_success: true,
+      new_note_tags: "",
+      new_note_text: "",
+    });
+  }
+
+  handleNewNoteTextChange = (e: React.FormEvent<HTMLInputElement>) => {
+    this.setState({new_note_text: e.currentTarget.value || ""});
+  }
+
+  handleNewNoteTagsChange = (e: React.FormEvent<HTMLInputElement>) => {
+    this.setState({new_note_tags: e.currentTarget.value || ""});
+  }
+
   render() {
       return (
         <div className="block">
@@ -174,7 +205,45 @@ class App extends Component<{}, AppState> {
 
           <div id="new" className="container is-hidden">
             <div className="container">
-              Here will be creating new note block.
+              <form onSubmit={this.handleSubmit}>
+                <div className="container">
+                  <div className="field">
+                    <div className="control">
+                      <textarea 
+                        className="textarea" 
+                        value={this.state.new_note_text as string} 
+                        placeholder="Note text"
+                        onChange={this.handleNewNoteTextChange}
+                      ></textarea>
+                    </div>
+                  </div>
+                  <div className="field">
+                    <div className="control">
+                      <textarea 
+                        className="textarea" 
+                        value={this.state.new_note_tags as string} 
+                        placeholder="Tags separated by commas"
+                        onChange={this.handleNewNoteTagsChange}
+                      ></textarea>
+                    </div>
+                  </div>
+
+                  <div className="control">
+                    <button className="button is-link" type="submit">Submit</button>
+                  </div>
+
+                  {this.state.form_submitted && this.state.submit_success && (
+                    <div className="container mt-4">
+                      The note was successfully saved!
+                    </div>
+                  )}
+                  {this.state.submit_success === false && (
+                    <div className="container mt-4">
+                      An error occured: {this.state.form_errors}
+                    </div>
+                  )}
+                </div>
+              </form>
             </div>
           </div>
 
