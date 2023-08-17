@@ -29,6 +29,7 @@ class App extends Component<{}, AppState> {
     this.handleTagLeftClick = this.handleTagLeftClick.bind(this);
     this.handleTagRightClick = this.handleTagRightClick.bind(this);
     this.handleTagClick = this.handleTagClick.bind(this);
+    this.handleTabClick = this.handleTabClick.bind(this);
   }
 
   componentDidMount() {
@@ -107,54 +108,82 @@ class App extends Component<{}, AppState> {
     e.preventDefault();
   }
 
+  handleTabClick = (e: Event) => {
+    let target = e.currentTarget as Element;
+    let id = target.id;
+    target.classList.add("is-active");
+    ["notes", "new", "about"].forEach((elem) => {
+      if (id == elem + "-tab") {
+        document.getElementById(elem)?.classList.remove("is-hidden");
+      } else {
+        document.getElementById(elem)?.classList.add("is-hidden");
+        document.getElementById(elem + "-tab")?.classList.remove("is-active");
+      }
+    });
+  }
+
   render() {
       return (
         <div className="block">
-        <div className="tabs is-centered is-large m-4">
-          <ul>
-            <li className="is-active"><a>Notes</a></li>
-            <li><a>New</a></li>
-            <li><a>About</a></li>
-          </ul>
-        </div>
-  
-        <div className="container has-text-centered">
-          <div className="tags is-centered">
-            {this.state.all_tags.map((t) =>
-              <span className={"tag is-light is-medium is-clickable" + 
-                (this.state.yes_tags.includes(t) ? " is-primary" : (this.state.no_tags.includes(t) ? " is-warning" : ""))} 
-                onClick={this.handleTagClick} 
-                onContextMenu={this.handleTagClick}
-                key={t as React.Key}>
-                {t}
-              </span>
-            )}
-            <span key = "__refresh" className="m-1 is-clickable" onClick={this.handleRefreshClick} >
-              <Icon path={mdiRefresh} size={1} />
-            </span>
-            
+          <div className="tabs is-centered is-large m-4">
+            <ul>
+              <li id="notes-tab" className="is-active" onClick={this.handleTabClick}><a>Notes</a></li>
+              <li id="new-tab" onClick={this.handleTabClick}><a>New</a></li>
+              <li id="about-tab" onClick={this.handleTabClick}><a>About</a></li>
+            </ul>
           </div>
-        </div>
+    
+          <div id="notes" className="container">
+            <div className="container has-text-centered">
+              <div className="tags is-centered">
+                {this.state.all_tags.map((t) =>
+                  <span className={"tag is-light is-medium is-clickable" + 
+                    (this.state.yes_tags.includes(t) ? " is-primary" : (this.state.no_tags.includes(t) ? " is-warning" : ""))} 
+                    onClick={this.handleTagClick} 
+                    onContextMenu={this.handleTagClick}
+                    key={t as React.Key}>
+                    {t}
+                  </span>
+                )}
+                <span key = "__refresh" className="m-1 is-clickable" onClick={this.handleRefreshClick} >
+                  <Icon path={mdiRefresh} size={1} />
+                </span>
+                
+              </div>
+            </div>
 
-        <div className="container has-text-centered">
-          <div className="block has-text-left m-6">
-            {this.state.notes.map((d) => 
-              <div key={d.key} className="block">
-                <div className="block mb-4">
-                  {d.value}
-                </div>
-                <div className="tags">
-                  {d.tags.map((t) =>
-                    <span key={t as React.Key} className="tag is-light">
-                      {t}
-                    </span>
-                  )}
-                </div>
-              </div>)}
+            <div className="container has-text-centered">
+              <div className="block has-text-left m-6">
+                {this.state.notes.map((d) => 
+                  <div key={d.key} className="block">
+                    <div className="block mb-4">
+                      {d.value}
+                    </div>
+                    <div className="tags">
+                      {d.tags.map((t) =>
+                        <span key={t as React.Key} className="tag is-light">
+                          {t}
+                        </span>
+                      )}
+                    </div>
+                  </div>)}
+              </div>
+              <button className="button" onClick={this.updateNotes}>Refresh</button>
+            </div>
           </div>
-          <button className="button" onClick={this.updateNotes}>Refresh</button>
+
+          <div id="new" className="container is-hidden">
+            <div className="container">
+              Here will be creating new note block.
+            </div>
+          </div>
+
+          <div id="about" className="container is-hidden">
+            <div className="container">
+              Some text about this project. Some more text, and a bit more.
+            </div>
+          </div>
         </div>
-      </div>
       );
   }
 }
