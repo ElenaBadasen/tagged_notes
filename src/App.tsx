@@ -1,11 +1,11 @@
 import { Component } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import Icon from '@mdi/react';
-import { mdiRefresh } from '@mdi/js';
+import { mdiRefresh, mdiPencil } from '@mdi/js';
 import Edit from "./Edit";
 
 type AppState = {
-  notes: Array<{key: React.Key, value: String, tags: Array<String>}>,
+  notes: Array<{id: Number, value: String, tags: Array<String>}>,
   all_tags: Array<String>,
   yes_tags: Array<String>,
   no_tags: Array<String>,
@@ -42,6 +42,8 @@ class App extends Component<{}, AppState> {
     this.handleTagClick = this.handleTagClick.bind(this);
     this.handleTabClick = this.handleTabClick.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleDelete = this.handleDelete.bind(this);
+    this.handleHide = this.handleHide.bind(this);
   }
 
   componentDidMount() {
@@ -52,7 +54,7 @@ class App extends Component<{}, AppState> {
   updateNotes() {
     let self = this;
     invoke("notes").then((result) => {
-      let notes = result as Array<{key: React.Key, value: String, tags: Array<String>}>;
+      let notes = result as Array<{id: Number, value: String, tags: Array<String>}>;
       self.setState({notes: notes});
     });
   }
@@ -134,16 +136,45 @@ class App extends Component<{}, AppState> {
     });
   }
 
-  handleSubmit = (id: null | number, note: String, tags: String) => {
+  handleEditClick = (e: Event) => {
+    let target = e.currentTarget as Element;
+    let id = target.id;
+    if (id) {
+      let item_id = id.split("_")[1];
+      if (item_id) {
+        let form_id = "edit_form_" + item_id;
+        document.getElementById(form_id)?.classList.remove("is-hidden");
+      }
+    }
+  }
+
+  handleSubmit = (id: null | Number, note: String, tags: String) => {
     //TODO
     return ""
   }
 
+  handleDelete = (id: null | Number) => {
+    //TODO
+    return ""
+  }
+
+  handleHide = (id: null | Number) => {
+    console.log("HERE");
+    if (id) {
+      console.log("HERE1", id);
+      let form_id = "edit_form_" + id;
+      document.getElementById(form_id)?.classList.add("is-hidden");
+    }
+  }
+
   render() {
       const newProps = {
+        id: null,
         text: "",
         tags: "",
         handleSubmit: this.handleSubmit,
+        handleDelete: this.handleDelete,
+        handleHide: this.handleHide,
       }
       return (
         <div className="block">
@@ -177,17 +208,31 @@ class App extends Component<{}, AppState> {
             <div className="container has-text-centered">
               <div className="block has-text-left m-6">
                 {this.state.notes.map((d) => 
-                  <div key={d.key} className="block">
+                  <div key={d.id.toString() as React.Key} className="block">
                     <div className="block mb-4">
                       {d.value}
+                      <span id={"edit_" + d.id.toString()} className="ml-2 is-clickable" onClick={this.handleEditClick} >
+                        <Icon path={mdiPencil} size={0.7} />
+                      </span>
                     </div>
                     <div className="tags">
                       {d.tags.map((t) =>
-                        <span key={t as React.Key} className="tag is-light">
+                        <span key={(d.id.toString() + "_" + t) as React.Key} className="tag is-light">
                           {t}
                         </span>
                       )}
                     </div>
+                  
+                    <div id={"edit_form_" + d.id.toString()} className="container is-hidden">
+                      <Edit {...{id: d.id, 
+                        text: d.value,
+                        tags: d.tags.join(", "),
+                        handleSubmit: this.handleSubmit,
+                        handleCancel: this.handleCancel,
+                        handleHide: this.handleHide,
+                      }} />
+                    </div> 
+                    
                   </div>)}
               </div>
               <button className="button" onClick={this.updateNotes}>Refresh</button>

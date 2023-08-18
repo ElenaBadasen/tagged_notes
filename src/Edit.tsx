@@ -9,9 +9,12 @@ type EditState = {
 }
 
 interface EditProps {
+    id: null | Number,
     text: String,
     tags: String,
-    handleSubmit: (id: null | number, note: String, tags: String) => string,
+    handleSubmit: (id: null | Number, note: String, tags: String) => string,
+    handleHide: (id: null | Number) => void,
+    handleDelete: (id: null | Number) => string,
 }
 
 class Edit extends Component<EditProps, EditState> {
@@ -27,6 +30,8 @@ class Edit extends Component<EditProps, EditState> {
         this.handleNewNoteTextChange = this.handleNewNoteTextChange.bind(this);
         this.handleNewNoteTagsChange = this.handleNewNoteTagsChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleCancel = this.handleCancel.bind(this);
+        this.handleDelete = this.handleDelete.bind(this);
     }
 
     handleNewNoteTextChange = (e: React.FormEvent<HTMLInputElement>) => {
@@ -38,20 +43,24 @@ class Edit extends Component<EditProps, EditState> {
     }
 
     handleSubmit = (e: React.FormEvent<HTMLInputElement>) => {
-        event.preventDefault();
+        e.preventDefault();
         const errors = this.props.handleSubmit(
-            Number(e.currentTarget.name), 
+            this.props.id, 
             this.state.new_note_text,
             this.state.new_note_tags,    
         );
         if (errors.length == 0) {
+          this.setState({
+            form_submitted: true,
+            submit_success: true,
+            form_errors: "",
+          });
+          if (!this.props.id) {
             this.setState({
-                form_submitted: true,
-                submit_success: true,
                 new_note_tags: "",
                 new_note_text: "",
-                form_errors: "",
             });
+          }
         } else {
             this.setState({
                 form_submitted: true,
@@ -59,6 +68,42 @@ class Edit extends Component<EditProps, EditState> {
                 form_errors: errors,
             });
         }
+    }
+
+    handleCancel = (e: React.FormEvent<HTMLInputElement>) => {
+      e.preventDefault();
+      this.setState({
+        form_submitted: false,
+        submit_success: true,
+        form_errors: "",
+        new_note_text: this.props.text,
+        new_note_tags: this.props.tags,
+      });
+      this.props.handleHide(
+        this.props.id, 
+      );
+    }
+
+    handleDelete = (e: React.FormEvent<HTMLInputElement>) => {
+      e.preventDefault();
+      const errors = this.props.handleDelete (
+        this.props.id, 
+      );
+      if (errors.length == 0) {
+          this.setState({
+              form_submitted: true,
+              submit_success: true,
+              new_note_tags: "",
+              new_note_text: "",
+              form_errors: "",
+          });
+      } else {
+          this.setState({
+              form_submitted: true,
+              submit_success: false,
+              form_errors: errors,
+          });
+      }
     }
 
     render() {
@@ -87,8 +132,10 @@ class Edit extends Component<EditProps, EditState> {
                     </div>
                   </div>
 
-                  <div className="control">
-                    <button className="button is-link" type="submit">Submit</button>
+                  <div className="buttons">
+                    {this.props.id && <button className="button is-rounded" onClick={this.handleCancel}>Cancel</button>}
+                    <button className="button is-rounded" type="submit">Submit</button>
+                    {this.props.id && <button className="button is-rounded is-danger"  onClick={this.handleDelete}>Delete</button>}
                   </div>
 
                   {this.state.form_submitted && this.state.submit_success && (

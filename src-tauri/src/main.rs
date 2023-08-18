@@ -27,20 +27,20 @@ fn all_tags() -> Vec<String> {
 #[tauri::command]
 fn notes() -> Vec<Note> {
     vec![
-        Note{key: "1".to_string(), value: "note1".to_string(), 
+        Note{id: 1, value: "note1".to_string(), 
             tags: vec!["tag1".to_string(), "tag2".to_string(), "tag3".to_string()]}, 
-        Note{key: "2".to_string(), value: "note2".to_string(), 
+        Note{id: 2, value: "note2".to_string(), 
             tags: vec!["tag3".to_string(), "tag2".to_string()]}, 
-        Note{key: "3".to_string(), value: "loooooooooooooooong loooooooooooooooong note3".to_string(), 
+        Note{id: 3, value: "loooooooooooooooong loooooooooooooooong note3".to_string(), 
             tags: vec!["tag7".to_string(), "tag2".to_string(), "tag3".to_string()]},
-        Note{key: "4".to_string(), value: format!("{:?}", Utc::now()), 
+        Note{id: 4, value: format!("{:?}", Utc::now()), 
             tags: vec!["tag1".to_string(), "tag2".to_string(), "tag3".to_string(), "tag398".to_string()] },
     ]
 }
 
 #[derive(Serialize, Deserialize)]
 struct Note {
-    key: String,
+    id: i32,
     value: String,
     tags: Vec<String>,
 }
