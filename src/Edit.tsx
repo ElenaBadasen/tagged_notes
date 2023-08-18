@@ -34,15 +34,15 @@ class Edit extends Component<EditProps, EditState> {
         this.handleDelete = this.handleDelete.bind(this);
     }
 
-    handleNewNoteTextChange = (e: React.FormEvent<HTMLInputElement>) => {
+    handleNewNoteTextChange = (e: React.FormEvent<HTMLTextAreaElement>) => {
         this.setState({new_note_text: e.currentTarget.value || ""});
     }
     
-    handleNewNoteTagsChange = (e: React.FormEvent<HTMLInputElement>) => {
+    handleNewNoteTagsChange = (e: React.FormEvent<HTMLTextAreaElement>) => {
         this.setState({new_note_tags: e.currentTarget.value || ""});
     }
 
-    handleSubmit = (e: React.FormEvent<HTMLInputElement>) => {
+    handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const errors = this.props.handleSubmit(
             this.props.id, 
@@ -70,7 +70,7 @@ class Edit extends Component<EditProps, EditState> {
         }
     }
 
-    handleCancel = (e: React.FormEvent<HTMLInputElement>) => {
+    handleCancel = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
       e.preventDefault();
       this.setState({
         form_submitted: false,
@@ -84,7 +84,7 @@ class Edit extends Component<EditProps, EditState> {
       );
     }
 
-    handleDelete = (e: React.FormEvent<HTMLInputElement>) => {
+    handleDelete = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
       e.preventDefault();
       const errors = this.props.handleDelete (
         this.props.id, 

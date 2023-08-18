@@ -67,14 +67,14 @@ class App extends Component<{}, AppState> {
     });
   }
 
-  handleRefreshClick = (e: Event) => {
+  handleRefreshClick = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
     this.setState({
       yes_tags: [],
       no_tags: [],
     });
   }
 
-  handleTagClick = (e: Event) => {
+  handleTagClick = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
     if (e.type === 'click') {
       this.handleTagLeftClick(e);
     } else if (e.type === 'contextmenu') {
@@ -82,7 +82,7 @@ class App extends Component<{}, AppState> {
     }
   }
 
-  handleTagLeftClick(e: Event) {
+  handleTagLeftClick(e: React.MouseEvent<HTMLLIElement, MouseEvent>) {
     let target = e.currentTarget as Element;
     let value: String = target.textContent || "";
     let yes_tags = this.state.yes_tags;
@@ -102,7 +102,7 @@ class App extends Component<{}, AppState> {
     e.preventDefault();
   }
 
-  handleTagRightClick(e: Event) {
+  handleTagRightClick(e: React.MouseEvent<HTMLLIElement, MouseEvent>) {
     let target = e.currentTarget as Element;
     let value: String = target.textContent || "";
     let no_tags = this.state.no_tags;
@@ -122,7 +122,7 @@ class App extends Component<{}, AppState> {
     e.preventDefault();
   }
 
-  handleTabClick = (e: Event) => {
+  handleTabClick = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
     let target = e.currentTarget as Element;
     let id = target.id;
     target.classList.add("is-active");
@@ -136,7 +136,7 @@ class App extends Component<{}, AppState> {
     });
   }
 
-  handleEditClick = (e: Event) => {
+  handleEditClick = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
     let target = e.currentTarget as Element;
     let id = target.id;
     if (id) {
@@ -159,9 +159,7 @@ class App extends Component<{}, AppState> {
   }
 
   handleHide = (id: null | Number) => {
-    console.log("HERE");
     if (id) {
-      console.log("HERE1", id);
       let form_id = "edit_form_" + id;
       document.getElementById(form_id)?.classList.add("is-hidden");
     }
@@ -228,7 +226,7 @@ class App extends Component<{}, AppState> {
                         text: d.value,
                         tags: d.tags.join(", "),
                         handleSubmit: this.handleSubmit,
-                        handleCancel: this.handleCancel,
+                        handleDelete: this.handleDelete,
                         handleHide: this.handleHide,
                       }} />
                     </div> 
