@@ -39,7 +39,7 @@ class Edit extends Component<EditProps, EditState> {
         this.setState({new_note_text: e.currentTarget.value || ""});
     }
     
-    handleNewNoteTagsChange = (e: React.FormEvent<HTMLTextAreaElement>) => {
+    handleNewNoteTagsChange = (e: React.FormEvent<HTMLInputElement>) => {
         this.setState({new_note_tags: e.currentTarget.value || ""});
     }
 
@@ -51,10 +51,19 @@ class Edit extends Component<EditProps, EditState> {
             this.state.new_note_tags,    
         ).then((errors) => {
           if (errors.length == 0) {
+            let self = this;
             this.setState({
               form_submitted: true,
               submit_success: true,
               form_errors: "",
+            }, () => {
+              setTimeout(() => {
+                self.setState({
+                  form_submitted: false,
+                  submit_success: true,
+                  form_errors: "",
+                });
+              }, 5000)
             });
             if (!this.props.id) {
               this.setState({
@@ -63,10 +72,19 @@ class Edit extends Component<EditProps, EditState> {
               });
             }
           } else {
+              let self = this;
               this.setState({
                   form_submitted: true,
                   submit_success: false,
                   form_errors: errors,
+              }, () => {
+                setTimeout(() => {
+                  self.setState({
+                    form_submitted: false,
+                    submit_success: true,
+                    form_errors: "",
+                  });
+                }, 5000)
               });
           }
         });
@@ -119,6 +137,7 @@ class Edit extends Component<EditProps, EditState> {
               <form onSubmit={this.handleSubmit}>
                 <div className="container">
                   <div className="field">
+                    <div className="container mb-2">Note text</div>
                     <div className="control">
                       <textarea 
                         className="textarea" 
@@ -129,13 +148,14 @@ class Edit extends Component<EditProps, EditState> {
                     </div>
                   </div>
                   <div className="field">
+                    <div className="container mb-2">Tags separated by commas</div>
                     <div className="control">
-                      <textarea 
-                        className="textarea" 
+                      <input 
+                        className="input" 
                         value={this.state.new_note_tags as string} 
                         placeholder="Tags separated by commas"
                         onChange={this.handleNewNoteTagsChange}
-                      ></textarea>
+                      />
                     </div>
                   </div>
 

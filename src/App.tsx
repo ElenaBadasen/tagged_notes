@@ -10,9 +10,6 @@ type AppState = {
   all_tags: Array<string>,
   yes_tags: Array<string>,
   no_tags: Array<string>,
-  form_submitted: boolean,
-  submit_success: boolean,
-  form_errors: string,
   new_note_text: string,
   new_note_tags: string,
   dir_path: string,
@@ -31,9 +28,6 @@ class App extends Component<{}, AppState> {
       all_tags: [],
       yes_tags: [],
       no_tags: [],
-      form_submitted: false,
-      submit_success: true,
-      form_errors: "",
       new_note_text: "",
       new_note_tags: "",
       dir_path: "",
@@ -114,9 +108,12 @@ class App extends Component<{}, AppState> {
   }
 
   handleRefreshClick = (_e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
+    let self = this;
     this.setState({
       yes_tags: [],
       no_tags: [],
+    }, () => {
+      self.updateSelectedNotes();
     });
   }
 
@@ -272,7 +269,7 @@ class App extends Component<{}, AppState> {
                     {t}
                   </span>
                 )}
-                <span key = "__refresh" className="m-1 is-clickable" onClick={this.handleRefreshClick} >
+                <span title="Clear" key = "__refresh" className="m-1 is-clickable" onClick={this.handleRefreshClick} >
                   <Icon path={mdiRefresh} size={1} />
                 </span>
               </div>}
