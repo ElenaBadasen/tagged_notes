@@ -6,6 +6,7 @@ import Edit from "./Edit";
 
 type AppState = {
   notes: Array<{id: number, value: string, tags: Array<string>}>,
+  selected_notes: Array<{id: number, value: string, tags: Array<string>}>,
   all_tags: Array<string>,
   yes_tags: Array<string>,
   no_tags: Array<string>,
@@ -26,6 +27,7 @@ class App extends Component<{}, AppState> {
 
     this.state = {
       notes: [],
+      selected_notes: [],
       all_tags: [],
       yes_tags: [],
       no_tags: [],
@@ -37,8 +39,7 @@ class App extends Component<{}, AppState> {
       dir_path: "",
     };
 
-    this.updateNotes = this.updateNotes.bind(this);
-    this.setAllTags = this.setAllTags.bind(this);
+    this.updateNotesAndTags = this.updateNotesAndTags.bind(this);
     this.handleTagLeftClick = this.handleTagLeftClick.bind(this);
     this.handleTagRightClick = this.handleTagRightClick.bind(this);
     this.handleTagClick = this.handleTagClick.bind(this);
@@ -47,11 +48,11 @@ class App extends Component<{}, AppState> {
     this.handleDelete = this.handleDelete.bind(this);
     this.handleHide = this.handleHide.bind(this);
     this.setDirPath = this.setDirPath.bind(this);
+    this.updateSelectedNotes = this.updateSelectedNotes.bind(this);
   }
 
   componentDidMount() {
-    this.updateNotes();
-    this.setAllTags();
+    this.updateNotesAndTags();
     this.setDirPath();
   }
 
@@ -62,23 +63,57 @@ class App extends Component<{}, AppState> {
     });
   }
 
-  updateNotes() {
+  updateNotesAndTags() {
     let self = this;
     invoke("notes").then((result) => {
       let notes = result as Array<{id: number, value: string, tags: Array<string>}>;
-      self.setState({notes: notes});
+      let all_tags = notes
+        .map(function(n){ return n.tags })
+        .flat()
+        .filter((item, i, arr) => {
+          let elem = arr.find(t => t === item);
+          if (elem) {
+            return arr.indexOf(elem) === i;
+          } else {
+            return false;
+          }
+        })
+        .sort();
+      self.setState({notes: notes, all_tags: all_tags}, () => {
+        self.updateSelectedNotes();
+      });
     });
   }
 
-  setAllTags() {
-    let self = this;
-    invoke("all_tags").then((result) => {
-      let all_tags = result as Array<string>;
-      self.setState({all_tags: all_tags});
-    });
+  updateSelectedNotes() {
+    let selected_notes;
+    if (this.state.yes_tags.length == 0 && this.state.no_tags.length == 0) {
+      selected_notes = this.state.notes;
+    } else {
+      selected_notes = this.state.notes.filter((note) => {
+        let included_tags_found = false;
+        for (let t of this.state.yes_tags) {
+          if (note.tags.includes(t)) {
+            included_tags_found = true;
+            break;
+          }
+        };
+        let excluded_tags_found = false;
+        if (included_tags_found || this.state.yes_tags.length == 0) {
+          for (let t of this.state.no_tags) {
+            if (note.tags.includes(t)) {
+              excluded_tags_found = true;
+              break;
+            }
+          };
+        }
+        return (included_tags_found || this.state.yes_tags.length == 0) && !excluded_tags_found;
+      });
+    }
+    this.setState({selected_notes: selected_notes});
   }
 
-  handleRefreshClick = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
+  handleRefreshClick = (_e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
     this.setState({
       yes_tags: [],
       no_tags: [],
@@ -109,7 +144,9 @@ class App extends Component<{}, AppState> {
       }
       yes_tags.push(value);
     }
-    this.setState({yes_tags: yes_tags});
+    this.setState({yes_tags: yes_tags}, () => {
+      this.updateSelectedNotes();
+    });
     e.preventDefault();
   }
 
@@ -129,7 +166,9 @@ class App extends Component<{}, AppState> {
       }
       no_tags.push(value);
     }
-    this.setState({no_tags: no_tags});
+    this.setState({no_tags: no_tags}, () => {
+      this.updateSelectedNotes();
+    });
     e.preventDefault();
   }
 
@@ -159,14 +198,40 @@ class App extends Component<{}, AppState> {
     }
   }
 
-  handleSubmit = (id: null | number, note: string, tags: string) => {
-    //TODO
-    return ""
+  handleSubmit = (id: null | number, note: string, tags: string): Promise<string> => {
+    let result;
+    let self = this;
+    if (id) {
+      result = invoke("update", {id: id, note: note, tags: tags}).then((result) => {
+        if ((result as string).length == 0) {
+          self.handleHide(id);
+          self.updateNotesAndTags();
+        }
+        return result as string;
+      });
+    } else {
+      result = invoke("insert", {note: note, tags: tags}).then((result) => {
+        if ((result as string).length == 0) {
+          self.updateNotesAndTags();
+        }
+        return result as string;
+      });
+    }
+    return result;
   }
 
-  handleDelete = (id: null | number) => {
-    //TODO
-    return ""
+  handleDelete = (id: null | number): Promise<string> => {
+    let self = this;
+    if (id) {
+      return invoke("delete", {id: id}).then((result) => {
+        if ((result as string).length == 0) {
+          self.updateNotesAndTags();
+        }
+        return result as string;
+      });
+    } else {
+      return new Promise<string>(() => "No id for delete");
+    }
   }
 
   handleHide = (id: null | number) => {
@@ -195,9 +260,9 @@ class App extends Component<{}, AppState> {
             </ul>
           </div>
     
-          <div id="notes" className="container">
+          <div id="notes" className="container p-4">
             <div className="container has-text-centered">
-              <div className="tags is-centered">
+              {this.state.all_tags.length > 0 && <div className="tags is-centered">
                 {this.state.all_tags.map((t) =>
                   <span className={"tag is-light is-medium is-clickable" + 
                     (this.state.yes_tags.includes(t) ? " is-primary" : (this.state.no_tags.includes(t) ? " is-warning" : ""))} 
@@ -210,13 +275,20 @@ class App extends Component<{}, AppState> {
                 <span key = "__refresh" className="m-1 is-clickable" onClick={this.handleRefreshClick} >
                   <Icon path={mdiRefresh} size={1} />
                 </span>
-                
-              </div>
+              </div>}
+              {this.state.all_tags.length == 0  && 
+              <div className="container">
+                No tags yet
+              </div>}
             </div>
 
             <div className="container has-text-centered">
+              {this.state.selected_notes.length == 0  && 
+              <div className="container mt-4">
+                No notes selected
+              </div>}
               <div className="block has-text-left m-6">
-                {this.state.notes.map((d) => 
+                {this.state.selected_notes.map((d) => 
                   <div key={d.id.toString() as React.Key} className="block">
                     <div className="block mb-4">
                       {d.value}
@@ -224,13 +296,13 @@ class App extends Component<{}, AppState> {
                         <Icon path={mdiPencil} size={0.7} />
                       </span>
                     </div>
-                    <div className="tags">
+                    {d.tags.length > 0 && <div className="tags">
                       {d.tags.map((t) =>
                         <span key={(d.id.toString() + "_" + t) as React.Key} className="tag is-light">
                           {t}
                         </span>
                       )}
-                    </div>
+                    </div>}
                   
                     <div id={"edit_form_" + d.id.toString()} className="container is-hidden">
                       <Edit {...{id: d.id, 
@@ -244,18 +316,17 @@ class App extends Component<{}, AppState> {
                     
                   </div>)}
               </div>
-              <button className="button" onClick={this.updateNotes}>Refresh</button>
             </div>
           </div>
 
-          <div id="new" className="container is-hidden">
+          <div id="new" className="container is-hidden p-4">
             <Edit {...newProps} />
           </div>
 
-          <div id="about" className="container is-hidden">
+          <div id="about" className="container is-hidden p-4">
             <div className="container">
-              <p>Some text about this project. Some more text, and a bit more.</p>
-              <p>The save file on your system is located in the folder {this.state.dir_path}</p>
+              <p>Use left and right mouse clicks on the all tags list to include or exclude tags from search.</p>
+              <p>The save file on your system is located here: {this.state.dir_path}</p>
             </div>
           </div>
         </div>

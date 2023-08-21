@@ -1,4 +1,5 @@
 import { Component } from "react";
+import { confirm } from '@tauri-apps/api/dialog';
 
 type EditState = {
     form_submitted: boolean,
@@ -12,9 +13,9 @@ interface EditProps {
     id: null | number,
     text: string,
     tags: string,
-    handleSubmit: (id: null | number, note: string, tags: string) => string,
+    handleSubmit: (id: null | number, note: string, tags: string) => Promise<string>,
     handleHide: (id: null | number) => void,
-    handleDelete: (id: null | number) => string,
+    handleDelete: (id: null | number) => Promise<string>,
 }
 
 class Edit extends Component<EditProps, EditState> {
@@ -44,30 +45,31 @@ class Edit extends Component<EditProps, EditState> {
 
     handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const errors = this.props.handleSubmit(
+        this.props.handleSubmit(
             this.props.id, 
             this.state.new_note_text,
             this.state.new_note_tags,    
-        );
-        if (errors.length == 0) {
-          this.setState({
-            form_submitted: true,
-            submit_success: true,
-            form_errors: "",
-          });
-          if (!this.props.id) {
+        ).then((errors) => {
+          if (errors.length == 0) {
             this.setState({
-                new_note_tags: "",
-                new_note_text: "",
+              form_submitted: true,
+              submit_success: true,
+              form_errors: "",
             });
+            if (!this.props.id) {
+              this.setState({
+                  new_note_tags: "",
+                  new_note_text: "",
+              });
+            }
+          } else {
+              this.setState({
+                  form_submitted: true,
+                  submit_success: false,
+                  form_errors: errors,
+              });
           }
-        } else {
-            this.setState({
-                form_submitted: true,
-                submit_success: false,
-                form_errors: errors,
-            });
-        }
+        });
     }
 
     handleCancel = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -86,24 +88,29 @@ class Edit extends Component<EditProps, EditState> {
 
     handleDelete = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
       e.preventDefault();
-      const errors = this.props.handleDelete (
-        this.props.id, 
-      );
-      if (errors.length == 0) {
-          this.setState({
-              form_submitted: true,
-              submit_success: true,
-              new_note_tags: "",
-              new_note_text: "",
-              form_errors: "",
+      confirm('Are you sure you want to delete it?').then((result) => {
+        if (result) {
+          this.props.handleDelete (
+            this.props.id, 
+          ).then((errors) => {
+            if (errors.length == 0) {
+              this.setState({
+                  form_submitted: true,
+                  submit_success: true,
+                  new_note_tags: "",
+                  new_note_text: "",
+                  form_errors: "",
+              });
+            } else {
+                this.setState({
+                    form_submitted: true,
+                    submit_success: false,
+                    form_errors: errors,
+                });
+            }
           });
-      } else {
-          this.setState({
-              form_submitted: true,
-              submit_success: false,
-              form_errors: errors,
-          });
-      }
+        }
+      });
     }
 
     render() {

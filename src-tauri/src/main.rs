@@ -1,64 +1,67 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use serde::{Serialize, Deserialize};
-use chrono::prelude::*;
+use rusqlite::Connection;
+use std::sync::Mutex;
 extern crate directories;
-use directories::{BaseDirs};
+mod db;
+
+use db::Note;
 
 #[tauri::command]
-fn all_tags() -> Vec<String> {
-    vec![
-        "tag1".to_string(),
-        "tag2".to_string(),
-        "tag3".to_string(),
-        "tag4".to_string(),
-        "tag5".to_string(),
-        "tag7".to_string(),
-        "tag77".to_string(),
-        "tag5353".to_string(),
-        "tag0000".to_string(),
-        "tag88888888888888".to_string(),
-        "tag1111111111".to_string(),
-        "tag11111".to_string(),
-        "tag156".to_string(),
-        "tag1333".to_string(),
-    ]
-}
-
-#[tauri::command]
-fn notes() -> Vec<Note> {
-    vec![
-        Note{id: 1, value: "note1".to_string(), 
-            tags: vec!["tag1".to_string(), "tag2".to_string(), "tag3".to_string()]}, 
-        Note{id: 2, value: "note2".to_string(), 
-            tags: vec!["tag3".to_string(), "tag2".to_string()]}, 
-        Note{id: 3, value: "loooooooooooooooong loooooooooooooooong note3".to_string(), 
-            tags: vec!["tag7".to_string(), "tag2".to_string(), "tag3".to_string()]},
-        Note{id: 4, value: format!("{:?}", Utc::now()), 
-            tags: vec!["tag1".to_string(), "tag2".to_string(), "tag3".to_string(), "tag398".to_string()] },
-    ]
+fn notes(state: tauri::State<MyConnection>) -> Vec<Note> {
+    let conn = state.0.lock().unwrap();
+    db::notes(conn)
 }
 
 #[tauri::command]
 fn dir_path() -> String {
-    if let Some(base_dirs) = BaseDirs::new() {
-        base_dirs.data_local_dir().to_str().unwrap().to_string()
-    } else {
-        "".to_string()
+    db::get_db_path()
+}
+
+#[tauri::command]
+fn insert(state: tauri::State<MyConnection>, note: String, tags: String) -> String {
+    if note.is_empty() {
+        return "Note text cannot be empty".to_string();
+    }
+    let conn = state.0.lock().unwrap();
+    match db::insert(conn, note, tags) {
+        Err(e) => e.to_string(),
+        Ok(_) => "".to_string(),
     }
 }
 
-#[derive(Serialize, Deserialize)]
-struct Note {
-    id: i32,
-    value: String,
-    tags: Vec<String>,
+#[tauri::command]
+fn update(state: tauri::State<MyConnection>, id: i32, note: String, tags: String) -> String {
+    if note.is_empty() {
+        return "Note text cannot be empty".to_string();
+    }
+    let conn = state.0.lock().unwrap();
+    match db::update(conn, id, note, tags) {
+        Err(e) => e.to_string(),
+        Ok(_) => "".to_string(),
+    }
 }
 
+#[tauri::command]
+fn delete(state: tauri::State<MyConnection>, id: i32) -> String {
+    let conn = state.0.lock().unwrap();
+    match db::delete(conn, id) {
+        Err(e) => e.to_string(),
+        Ok(_) => "".to_string(),
+    }
+}
+
+struct MyConnection(Mutex<Connection>);
+
 fn main() {
+    db::init();
+    let conn = db::connection().unwrap();
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![notes, all_tags, dir_path])
+        .manage(MyConnection(Mutex::new(conn)))
+        .invoke_handler(tauri::generate_handler![
+            notes, dir_path, insert, update, delete
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
