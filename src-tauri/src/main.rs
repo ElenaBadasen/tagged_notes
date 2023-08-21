@@ -3,6 +3,8 @@
 
 use serde::{Serialize, Deserialize};
 use chrono::prelude::*;
+extern crate directories;
+use directories::{BaseDirs};
 
 #[tauri::command]
 fn all_tags() -> Vec<String> {
@@ -38,6 +40,15 @@ fn notes() -> Vec<Note> {
     ]
 }
 
+#[tauri::command]
+fn dir_path() -> String {
+    if let Some(base_dirs) = BaseDirs::new() {
+        base_dirs.data_local_dir().to_str().unwrap().to_string()
+    } else {
+        "".to_string()
+    }
+}
+
 #[derive(Serialize, Deserialize)]
 struct Note {
     id: i32,
@@ -47,7 +58,7 @@ struct Note {
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![notes, all_tags])
+        .invoke_handler(tauri::generate_handler![notes, all_tags, dir_path])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

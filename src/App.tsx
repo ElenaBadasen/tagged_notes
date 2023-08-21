@@ -14,6 +14,7 @@ type AppState = {
   form_errors: string,
   new_note_text: string,
   new_note_tags: string,
+  dir_path: string,
 }
 
 interface AppProps {
@@ -33,6 +34,7 @@ class App extends Component<{}, AppState> {
       form_errors: "",
       new_note_text: "",
       new_note_tags: "",
+      dir_path: "",
     };
 
     this.updateNotes = this.updateNotes.bind(this);
@@ -44,11 +46,20 @@ class App extends Component<{}, AppState> {
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
     this.handleHide = this.handleHide.bind(this);
+    this.setDirPath = this.setDirPath.bind(this);
   }
 
   componentDidMount() {
     this.updateNotes();
     this.setAllTags();
+    this.setDirPath();
+  }
+
+  setDirPath() {
+    let self = this;
+    invoke("dir_path").then((result) => {
+      self.setState({dir_path: result as string});
+    });
   }
 
   updateNotes() {
@@ -243,7 +254,8 @@ class App extends Component<{}, AppState> {
 
           <div id="about" className="container is-hidden">
             <div className="container">
-              Some text about this project. Some more text, and a bit more.
+              <p>Some text about this project. Some more text, and a bit more.</p>
+              <p>The save file on your system is located in the folder {this.state.dir_path}</p>
             </div>
           </div>
         </div>
