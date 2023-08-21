@@ -5,15 +5,15 @@ import { mdiRefresh, mdiPencil } from '@mdi/js';
 import Edit from "./Edit";
 
 type AppState = {
-  notes: Array<{id: Number, value: String, tags: Array<String>}>,
-  all_tags: Array<String>,
-  yes_tags: Array<String>,
-  no_tags: Array<String>,
+  notes: Array<{id: number, value: string, tags: Array<string>}>,
+  all_tags: Array<string>,
+  yes_tags: Array<string>,
+  no_tags: Array<string>,
   form_submitted: boolean,
   submit_success: boolean,
-  form_errors: String,
-  new_note_text: String,
-  new_note_tags: String,
+  form_errors: string,
+  new_note_text: string,
+  new_note_tags: string,
 }
 
 interface AppProps {
@@ -54,7 +54,7 @@ class App extends Component<{}, AppState> {
   updateNotes() {
     let self = this;
     invoke("notes").then((result) => {
-      let notes = result as Array<{id: Number, value: String, tags: Array<String>}>;
+      let notes = result as Array<{id: number, value: string, tags: Array<string>}>;
       self.setState({notes: notes});
     });
   }
@@ -62,7 +62,7 @@ class App extends Component<{}, AppState> {
   setAllTags() {
     let self = this;
     invoke("all_tags").then((result) => {
-      let all_tags = result as Array<String>;
+      let all_tags = result as Array<string>;
       self.setState({all_tags: all_tags});
     });
   }
@@ -84,7 +84,7 @@ class App extends Component<{}, AppState> {
 
   handleTagLeftClick(e: React.MouseEvent<HTMLLIElement, MouseEvent>) {
     let target = e.currentTarget as Element;
-    let value: String = target.textContent || "";
+    let value: string = target.textContent || "";
     let yes_tags = this.state.yes_tags;
     const index = yes_tags.indexOf(value, 0);
     if (index > -1) {
@@ -104,7 +104,7 @@ class App extends Component<{}, AppState> {
 
   handleTagRightClick(e: React.MouseEvent<HTMLLIElement, MouseEvent>) {
     let target = e.currentTarget as Element;
-    let value: String = target.textContent || "";
+    let value: string = target.textContent || "";
     let no_tags = this.state.no_tags;
     const index = no_tags.indexOf(value, 0);
     if (index > -1) {
@@ -148,17 +148,17 @@ class App extends Component<{}, AppState> {
     }
   }
 
-  handleSubmit = (id: null | Number, note: String, tags: String) => {
+  handleSubmit = (id: null | number, note: string, tags: string) => {
     //TODO
     return ""
   }
 
-  handleDelete = (id: null | Number) => {
+  handleDelete = (id: null | number) => {
     //TODO
     return ""
   }
 
-  handleHide = (id: null | Number) => {
+  handleHide = (id: null | number) => {
     if (id) {
       let form_id = "edit_form_" + id;
       document.getElementById(form_id)?.classList.add("is-hidden");

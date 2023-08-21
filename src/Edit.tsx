@@ -3,18 +3,18 @@ import { Component } from "react";
 type EditState = {
     form_submitted: boolean,
     submit_success: boolean,
-    form_errors: String,
-    new_note_text: String,
-    new_note_tags: String,
+    form_errors: string,
+    new_note_text: string,
+    new_note_tags: string,
 }
 
 interface EditProps {
-    id: null | Number,
-    text: String,
-    tags: String,
-    handleSubmit: (id: null | Number, note: String, tags: String) => string,
-    handleHide: (id: null | Number) => void,
-    handleDelete: (id: null | Number) => string,
+    id: null | number,
+    text: string,
+    tags: string,
+    handleSubmit: (id: null | number, note: string, tags: string) => string,
+    handleHide: (id: null | number) => void,
+    handleDelete: (id: null | number) => string,
 }
 
 class Edit extends Component<EditProps, EditState> {
