@@ -33,6 +33,7 @@ pub fn update(
     note: String,
     tags: String,
 ) -> Result<usize, rusqlite::Error> {
+    // TODO: check number of changed rows
     conn.execute(
         "UPDATE notes SET note=?1, tags=?2 WHERE id=?3",
         params![note, tags, id],
@@ -40,6 +41,7 @@ pub fn update(
 }
 
 pub fn delete(conn: MutexGuard<'_, Connection>, id: i32) -> Result<usize, rusqlite::Error> {
+    // TODO: check number of changed rows
     conn.execute("DELETE FROM notes WHERE id=?1", params![id])
 }
 
@@ -50,7 +52,9 @@ pub struct Note {
     pub tags: Vec<String>,
 }
 
+// TODO: pass &Connection instead
 pub fn notes(conn: MutexGuard<'_, Connection>) -> Vec<Note> {
+    // TODO: unwrap -> expect
     let mut prepared = conn.prepare("SELECT id, note, tags FROM notes").unwrap();
     let note_iter = prepared
         .query_map([], |row| {
@@ -58,7 +62,7 @@ pub fn notes(conn: MutexGuard<'_, Connection>) -> Vec<Note> {
                 id: row.get(0)?,
                 value: row.get(1)?,
                 tags: row
-                    .get::<usize, String>(2)?
+                    .get::<_, String>(2)?
                     .split(',')
                     .map(|t| t.trim().to_string())
                     .filter(|t| !t.is_empty())
@@ -76,13 +80,16 @@ fn db_file_exists() -> bool {
 
 pub fn get_db_path() -> String {
     if let Some(base_dirs) = BaseDirs::new() {
-        let result = base_dirs.data_local_dir().to_str().unwrap().to_string() + "/" + get_db_filename();
+        // TODO: use join()
+        let result =
+            base_dirs.data_local_dir().to_str().unwrap().to_string() + "/" + get_db_filename();
         result
     } else {
         panic!("error getting db path");
     }
 }
 
+// TODO: const
 fn get_db_filename() -> &'static str {
     "tagged_notes.sqlite"
 }
@@ -92,9 +99,11 @@ fn create_db_file() {
     let db_dir = Path::new(&db_path).parent().unwrap();
 
     if !db_dir.exists() {
+        // TODO: use fs_err for better errors
         fs::create_dir_all(db_dir).unwrap();
     }
 
+    // TODO: don't need this
     fs::File::create(db_path).unwrap();
 }
 

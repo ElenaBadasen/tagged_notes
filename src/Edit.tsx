@@ -38,7 +38,7 @@ class Edit extends Component<EditProps, EditState> {
     handleNewNoteTextChange = (e: React.FormEvent<HTMLTextAreaElement>) => {
         this.setState({new_note_text: e.currentTarget.value || ""});
     }
-    
+
     handleNewNoteTagsChange = (e: React.FormEvent<HTMLInputElement>) => {
         this.setState({new_note_tags: e.currentTarget.value || ""});
     }
@@ -46,9 +46,9 @@ class Edit extends Component<EditProps, EditState> {
     handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         this.props.handleSubmit(
-            this.props.id, 
+            this.props.id,
             this.state.new_note_text,
-            this.state.new_note_tags,    
+            this.state.new_note_tags,
         ).then((errors) => {
           if (errors.length == 0) {
             let self = this;
@@ -84,6 +84,7 @@ class Edit extends Component<EditProps, EditState> {
                     submit_success: true,
                     form_errors: "",
                   });
+                  // TODO: more time to think about errors
                 }, 5000)
               });
           }
@@ -100,7 +101,7 @@ class Edit extends Component<EditProps, EditState> {
         new_note_tags: this.props.tags,
       });
       this.props.handleHide(
-        this.props.id, 
+        this.props.id,
       );
     }
 
@@ -109,7 +110,7 @@ class Edit extends Component<EditProps, EditState> {
       confirm('Are you sure you want to delete it?').then((result) => {
         if (result) {
           this.props.handleDelete (
-            this.props.id, 
+            this.props.id,
           ).then((errors) => {
             if (errors.length == 0) {
               this.setState({
@@ -137,11 +138,15 @@ class Edit extends Component<EditProps, EditState> {
               <form onSubmit={this.handleSubmit}>
                 <div className="container">
                   <div className="field">
+                    {/* TODO: use labels, set "for"
+                    https://stackoverflow.com/a/71681435
+                    */}
                     <div className="container mb-2">Note text</div>
                     <div className="control">
-                      <textarea 
-                        className="textarea" 
-                        value={this.state.new_note_text as string} 
+                      <textarea
+                        className="textarea"
+                        // TODO: don't need as string
+                        value={this.state.new_note_text as string}
                         placeholder="Note text"
                         onChange={this.handleNewNoteTextChange}
                       ></textarea>
@@ -150,9 +155,9 @@ class Edit extends Component<EditProps, EditState> {
                   <div className="field">
                     <div className="container mb-2">Tags separated by commas</div>
                     <div className="control">
-                      <input 
-                        className="input" 
-                        value={this.state.new_note_tags as string} 
+                      <input
+                        className="input"
+                        value={this.state.new_note_tags as string}
                         placeholder="Tags separated by commas"
                         onChange={this.handleNewNoteTagsChange}
                       />
@@ -161,6 +166,7 @@ class Edit extends Component<EditProps, EditState> {
 
                   <div className="buttons">
                     {this.props.id && <button className="button is-rounded" onClick={this.handleCancel}>Cancel</button>}
+                    {/* TODO: better name for submit */}
                     <button className="button is-rounded" type="submit">Submit</button>
                     {this.props.id && <button className="button is-rounded is-danger"  onClick={this.handleDelete}>Delete</button>}
                   </div>

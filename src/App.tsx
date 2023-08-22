@@ -5,13 +5,16 @@ import { mdiRefresh, mdiPencil } from '@mdi/js';
 import Edit from "./Edit";
 
 type AppState = {
+  // TODO: declare type
   notes: Array<{id: number, value: string, tags: Array<string>}>,
   selected_notes: Array<{id: number, value: string, tags: Array<string>}>,
   all_tags: Array<string>,
   yes_tags: Array<string>,
   no_tags: Array<string>,
+  // TODO: should it be here?
   new_note_text: string,
   new_note_tags: string,
+  // TODO: rename
   dir_path: string,
 }
 
@@ -59,11 +62,13 @@ class App extends Component<{}, AppState> {
 
   updateNotesAndTags() {
     let self = this;
-    invoke("notes").then((result) => {
-      let notes = result as Array<{id: number, value: string, tags: Array<string>}>;
+    // TODO: use generic argument
+    invoke<Array<{id: number, value: string, tags: Array<string>}>>("notes").then((notes) => {
+      // TODO: use declared type
       let all_tags = notes
-        .map(function(n){ return n.tags })
+        .map((n) => n.tags)
         .flat()
+        // TODO: [...new Set(a)].sort()
         .filter((item, i, arr) => {
           let elem = arr.find(t => t === item);
           if (elem) {
@@ -73,7 +78,7 @@ class App extends Component<{}, AppState> {
           }
         })
         .sort();
-      self.setState({notes: notes, all_tags: all_tags}, () => {
+      self.setState({notes, all_tags}, () => {
         self.updateSelectedNotes();
       });
     });
@@ -104,7 +109,7 @@ class App extends Component<{}, AppState> {
         return (included_tags_found || this.state.yes_tags.length == 0) && !excluded_tags_found;
       });
     }
-    this.setState({selected_notes: selected_notes});
+    this.setState({selected_notes});
   }
 
   handleRefreshClick = (_e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
@@ -118,16 +123,20 @@ class App extends Component<{}, AppState> {
   }
 
   handleTagClick = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
+    //let tags;
     if (e.type === 'click') {
       this.handleTagLeftClick(e);
+      //tags = this.yes_tags;
     } else if (e.type === 'contextmenu') {
       this.handleTagRightClick(e);
     }
+    //...
   }
 
   handleTagLeftClick(e: React.MouseEvent<HTMLLIElement, MouseEvent>) {
     let target = e.currentTarget as Element;
     let value: string = target.textContent || "";
+    // TODO: use Set
     let yes_tags = this.state.yes_tags;
     const index = yes_tags.indexOf(value, 0);
     if (index > -1) {
@@ -141,12 +150,14 @@ class App extends Component<{}, AppState> {
       }
       yes_tags.push(value);
     }
+    // TODO: shorthand init syntax
     this.setState({yes_tags: yes_tags}, () => {
       this.updateSelectedNotes();
     });
     e.preventDefault();
   }
 
+  // TODO: deduplicate
   handleTagRightClick(e: React.MouseEvent<HTMLLIElement, MouseEvent>) {
     let target = e.currentTarget as Element;
     let value: string = target.textContent || "";
@@ -256,14 +267,15 @@ class App extends Component<{}, AppState> {
               <li id="about-tab" onClick={this.handleTabClick}><a>About</a></li>
             </ul>
           </div>
-    
+
           <div id="notes" className="container p-4">
             <div className="container has-text-centered">
               {this.state.all_tags.length > 0 && <div className="tags is-centered">
                 {this.state.all_tags.map((t) =>
-                  <span className={"tag is-light is-medium is-clickable" + 
-                    (this.state.yes_tags.includes(t) ? " is-primary" : (this.state.no_tags.includes(t) ? " is-warning" : ""))} 
-                    onClick={this.handleTagClick} 
+                  <span className={"tag is-light is-medium is-clickable" +
+                    (this.state.yes_tags.includes(t) ? " is-primary" : (this.state.no_tags.includes(t) ? " is-warning" : ""))}
+                    // TODO: onClick={this.handleTagClick(t, e)}
+                    onClick={this.handleTagClick}
                     onContextMenu={this.handleTagClick}
                     key={t as React.Key}>
                     {t}
@@ -273,19 +285,19 @@ class App extends Component<{}, AppState> {
                   <Icon path={mdiRefresh} size={1} />
                 </span>
               </div>}
-              {this.state.all_tags.length == 0  && 
+              {this.state.all_tags.length == 0  &&
               <div className="container">
                 No tags yet
               </div>}
             </div>
 
             <div className="container has-text-centered">
-              {this.state.selected_notes.length == 0  && 
+              {this.state.selected_notes.length == 0  &&
               <div className="container mt-4">
                 No notes selected
               </div>}
               <div className="block has-text-left m-6">
-                {this.state.selected_notes.map((d) => 
+                {this.state.selected_notes.map((d) =>
                   <div key={d.id.toString() as React.Key} className="block">
                     <div className="block mb-4">
                       {d.value}
@@ -300,17 +312,17 @@ class App extends Component<{}, AppState> {
                         </span>
                       )}
                     </div>}
-                  
+
                     <div id={"edit_form_" + d.id.toString()} className="container is-hidden">
-                      <Edit {...{id: d.id, 
+                      <Edit {...{id: d.id,
                         text: d.value,
                         tags: d.tags.join(", "),
                         handleSubmit: this.handleSubmit,
                         handleDelete: this.handleDelete,
                         handleHide: this.handleHide,
                       }} />
-                    </div> 
-                    
+                    </div>
+
                   </div>)}
               </div>
             </div>

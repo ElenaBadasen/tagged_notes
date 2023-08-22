@@ -14,11 +14,14 @@ fn notes(state: tauri::State<MyConnection>) -> Vec<Note> {
     db::notes(conn)
 }
 
+// TODO: rename
 #[tauri::command]
 fn dir_path() -> String {
+    // TODO: use display()
     db::get_db_path()
 }
 
+// TODO: return Result
 #[tauri::command]
 fn insert(state: tauri::State<MyConnection>, note: String, tags: String) -> String {
     if note.is_empty() {
@@ -31,6 +34,7 @@ fn insert(state: tauri::State<MyConnection>, note: String, tags: String) -> Stri
     }
 }
 
+// TODO: return Result
 #[tauri::command]
 fn update(state: tauri::State<MyConnection>, id: i32, note: String, tags: String) -> String {
     if note.is_empty() {
@@ -43,6 +47,7 @@ fn update(state: tauri::State<MyConnection>, id: i32, note: String, tags: String
     }
 }
 
+// TODO: return Result
 #[tauri::command]
 fn delete(state: tauri::State<MyConnection>, id: i32) -> String {
     let conn = state.0.lock().unwrap();
@@ -52,10 +57,12 @@ fn delete(state: tauri::State<MyConnection>, id: i32) -> String {
     }
 }
 
+// TODO: methods on this type for db access
 struct MyConnection(Mutex<Connection>);
 
 fn main() {
     db::init();
+    // TODO: return conn from init
     let conn = db::connection().unwrap();
     tauri::Builder::default()
         .manage(MyConnection(Mutex::new(conn)))
