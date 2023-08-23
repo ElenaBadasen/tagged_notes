@@ -180,6 +180,7 @@ class App extends Component<{}, AppState> {
     e.preventDefault();
   }
 
+  // TODO: use argument instead of accessing target
   handleTabClick = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
     let target = e.currentTarget as Element;
     let id = target.id;
@@ -194,6 +195,7 @@ class App extends Component<{}, AppState> {
     });
   }
 
+  // TODO: use argument
   handleEditClick = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
     let target = e.currentTarget as Element;
     let id = target.id;
@@ -201,6 +203,7 @@ class App extends Component<{}, AppState> {
       let item_id = id.split("_")[1];
       if (item_id) {
         let form_id = "edit_form_" + item_id;
+        // TODO: move logic to template
         document.getElementById(form_id)?.classList.remove("is-hidden");
       }
     }
@@ -228,6 +231,7 @@ class App extends Component<{}, AppState> {
     return result;
   }
 
+  // TODO: id shouldn't be optional
   handleDelete = (id: null | number): Promise<string> => {
     let self = this;
     if (id) {
@@ -262,6 +266,7 @@ class App extends Component<{}, AppState> {
         <div className="block">
           <div className="tabs is-centered is-large m-4">
             <ul>
+              {/* TODO: set is-active based on state */}
               <li id="notes-tab" className="is-active" onClick={this.handleTabClick}><a>Notes</a></li>
               <li id="new-tab" onClick={this.handleTabClick}><a>New</a></li>
               <li id="about-tab" onClick={this.handleTabClick}><a>About</a></li>
@@ -314,7 +319,8 @@ class App extends Component<{}, AppState> {
                     </div>}
 
                     <div id={"edit_form_" + d.id.toString()} className="container is-hidden">
-                      <Edit {...{id: d.id,
+                      <Edit {...{
+                        id: d.id,
                         text: d.value,
                         tags: d.tags.join(", "),
                         handleSubmit: this.handleSubmit,
