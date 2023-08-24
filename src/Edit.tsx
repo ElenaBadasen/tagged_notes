@@ -7,6 +7,7 @@ type EditState = {
     form_errors: string,
     new_note_text: string,
     new_note_tags: string,
+    timer: ReturnType<typeof setTimeout> | null,
 }
 
 interface EditProps {
@@ -14,8 +15,8 @@ interface EditProps {
     text: string,
     tags: string,
     handleSubmit: (id: null | number, note: string, tags: string) => Promise<string>,
-    handleHide: (id: null | number) => void,
-    handleDelete: (id: null | number) => Promise<string>,
+    handleHide?: (id: number) => void,
+    handleDelete?: (id: number) => Promise<string>,
 }
 
 class Edit extends Component<EditProps, EditState> {
@@ -25,6 +26,7 @@ class Edit extends Component<EditProps, EditState> {
             form_submitted: false,
             submit_success: true,
             form_errors: "",
+            timer: null,
             new_note_text: props.text,
             new_note_tags: props.tags,
         };
@@ -44,50 +46,44 @@ class Edit extends Component<EditProps, EditState> {
     }
 
     handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        if (this.state.timer) {
+          clearTimeout(this.state.timer);
+        }
         e.preventDefault();
         this.props.handleSubmit(
             this.props.id,
             this.state.new_note_text,
             this.state.new_note_tags,
-        ).then((errors) => {
-          if (errors.length == 0) {
-            let self = this;
-            this.setState({
-              form_submitted: true,
-              submit_success: true,
-              form_errors: "",
-            }, () => {
-              setTimeout(() => {
-                self.setState({
-                  form_submitted: false,
-                  submit_success: true,
-                  form_errors: "",
-                });
-              }, 5000)
-            });
+        ).then((_) => {
+          let timer: ReturnType<typeof setTimeout>;
+          this.setState({
+            form_submitted: true,
+            submit_success: true,
+            form_errors: "",
+          }, () => {
+            timer = setTimeout(() => {
+              this.setState({
+                form_submitted: false,
+                submit_success: true,
+                form_errors: "",
+              });
+            }, 5000);
             if (!this.props.id) {
               this.setState({
                   new_note_tags: "",
                   new_note_text: "",
+                  timer: timer,
               });
             }
-          } else {
-              let self = this;
-              this.setState({
-                  form_submitted: true,
-                  submit_success: false,
-                  form_errors: errors,
-              }, () => {
-                setTimeout(() => {
-                  self.setState({
-                    form_submitted: false,
-                    submit_success: true,
-                    form_errors: "",
-                  });
-                  // TODO: more time to think about errors
-                }, 5000)
-              });
-          }
+          });
+            
+        })
+        .catch((error) => {
+          this.setState({
+            form_submitted: true,
+            submit_success: false,
+            form_errors: error.message,
+          });
         });
     }
 
@@ -100,19 +96,21 @@ class Edit extends Component<EditProps, EditState> {
         new_note_text: this.props.text,
         new_note_tags: this.props.tags,
       });
-      this.props.handleHide(
-        this.props.id,
-      );
+      if (this.props.id && this.props.handleHide) {
+        this.props.handleHide(
+          this.props.id,
+        );
+      }
     }
 
     handleDelete = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
       e.preventDefault();
       confirm('Are you sure you want to delete it?').then((result) => {
         if (result) {
-          this.props.handleDelete (
-            this.props.id,
-          ).then((errors) => {
-            if (errors.length == 0) {
+          if (this.props.id && this.props.handleDelete) {
+            this.props.handleDelete (
+              this.props.id,
+            ).then((_) => {
               this.setState({
                   form_submitted: true,
                   submit_success: true,
@@ -120,44 +118,45 @@ class Edit extends Component<EditProps, EditState> {
                   new_note_text: "",
                   form_errors: "",
               });
-            } else {
+            })
+            .catch((error) => {
                 this.setState({
                     form_submitted: true,
                     submit_success: false,
-                    form_errors: errors,
+                    form_errors: error.message,
                 });
-            }
-          });
+            });
+          }
         }
       });
     }
 
     render() {
+        const id1 = "text_field_" + this.props.id;
+        const id2 = "tags_field_" + this.props.id;
         return (
             <div className="container">
               <form onSubmit={this.handleSubmit}>
                 <div className="container">
                   <div className="field">
-                    {/* TODO: use labels, set "for"
-                    https://stackoverflow.com/a/71681435
-                    */}
-                    <div className="container mb-2">Note text</div>
+                    <div className="container mb-2"><label htmlFor={id1}>Note text</label></div>
                     <div className="control">
                       <textarea
+                        id={id1}
                         className="textarea"
-                        // TODO: don't need as string
-                        value={this.state.new_note_text as string}
+                        value={this.state.new_note_text}
                         placeholder="Note text"
                         onChange={this.handleNewNoteTextChange}
                       ></textarea>
                     </div>
                   </div>
                   <div className="field">
-                    <div className="container mb-2">Tags separated by commas</div>
+                    <div className="container mb-2"><label htmlFor={id2}>Tags separated by commas</label></div>
                     <div className="control">
                       <input
+                        id={id2}
                         className="input"
-                        value={this.state.new_note_tags as string}
+                        value={this.state.new_note_tags}
                         placeholder="Tags separated by commas"
                         onChange={this.handleNewNoteTagsChange}
                       />
@@ -166,8 +165,7 @@ class Edit extends Component<EditProps, EditState> {
 
                   <div className="buttons">
                     {this.props.id && <button className="button is-rounded" onClick={this.handleCancel}>Cancel</button>}
-                    {/* TODO: better name for submit */}
-                    <button className="button is-rounded" type="submit">Submit</button>
+                    <button className="button is-rounded" type="submit">{this.props.id ? "Save" : "Create"}</button>
                     {this.props.id && <button className="button is-rounded is-danger"  onClick={this.handleDelete}>Delete</button>}
                   </div>
 
