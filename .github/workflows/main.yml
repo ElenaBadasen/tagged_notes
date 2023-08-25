@@ -38,3 +38,5 @@ jobs:
           releaseBody: 'See the assets to download this version and install.'
           releaseDraft: true
           prerelease: false
+          projectPath: 'src-tauri'
+          iconPath: 'icons/icon.png'
