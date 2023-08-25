@@ -1,9 +1,9 @@
 [package]
 name = "tagged_notes"
-version = "0.0.0"
+version = "0.1.0"
 description = "App for creating tagged notes and searching them by tags"
 authors = ["Elena Badasen"]
-license = ""
+license = "MIT OR Apache-2.0"
 repository = ""
 edition = "2021"
 
