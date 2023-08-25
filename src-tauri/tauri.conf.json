@@ -29,7 +29,7 @@
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "com.tauri.dev",
+      "identifier": "tagged-notes",
       "icon": [
       ]
     },
