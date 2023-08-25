@@ -1,7 +1,11 @@
 # Tagged Notes
 
-Simple app to create and search tagged notes. Windows and Linux supported fully, MacOS doesn't support excluding tags.
+Simple app to create and search tagged notes. Windows and Linux supported fully, MacOS may not support excluding tags if the mouse doesn't have the right-click option.
 Uses Tauri, React and Typescript in Vite, also Bulma for design.
+
+# Releases
+
+Check out releases section for downloadable files.
 
 # Build
 
